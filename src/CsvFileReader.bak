@@ -1,0 +1,40 @@
+バックアップ
+
+import fs from "fs";
+import { dateStringToDate } from "./utils";
+import { MatchResult } from "./MatchResult";
+
+// 型の順番が決まっていて変わることがない場合に使用
+type MatchDate = [Date, string, string, number, number, MatchResult, string];
+
+export class CsvFileReader {
+  data: MatchDate[] = [];
+
+  constructor(public filename: string) {}
+
+  read(): void {
+    this.data = fs
+      // 2番目の引数はオブジェクト内のオプションオブジェクト
+      .readFileSync(this.filename, {
+        // encoding付けないとバッファと呼ばれる物が返される(ファイルからのデータなし)
+        encoding: "utf-8",
+      })
+      .split("\n") //改行で配列になる
+      .map((row: string): string[] => {
+        return row.split(","); //,で配列になる
+      })
+      .map(
+        (row: string[]): MatchDate => {
+          return [
+            dateStringToDate(row[0]),
+            row[1],
+            row[2],
+            parseInt(row[3]),
+            parseInt(row[4]),
+            row[5] as MatchResult, //'H','A','D'
+            row[6],
+          ];
+        }
+      );
+  }
+}
